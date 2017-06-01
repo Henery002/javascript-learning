@@ -10,14 +10,14 @@ function superObject(id) {
 }
 
 function subObject(id) {
-    
+
     // 在子类的上下文完全复制superObject构造函数并执行
     superObject.call(this, id);
 
 }
 
 subObject.prototype.getId = function(){
-    
+
     return this.id;
 }
 

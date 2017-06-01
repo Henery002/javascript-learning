@@ -12,11 +12,13 @@
     <script>
 
     var elems = [document.getElementById('el'), document.getElementById('input')];
-    
+
+    // 数据依赖源
     var data = {
         value: 'hello!'
     };
 
+    // 模板方法指令
     var command = {
         text: function(str) {
             this.innerHTML = str;
@@ -26,6 +28,7 @@
         }
     };
 
+    // 节点扫描算法
     var scan = function(elems) {
         /**
          * 扫描带指令的节点属性
@@ -41,7 +44,7 @@
                      */
                     var dataKey = elem.getAttribute('ng-bind') || undefined;
                     /**
-                     * 进行数据初始化
+                     * 进行数据初始化，数据存储在每个DOM节点对象上，用于和数据依赖做diff对比
                      */
                     command[attr.nodeValue].call(elem, data[dataKey]);
                     elem.command[attr.nodeValue] = data[dataKey];

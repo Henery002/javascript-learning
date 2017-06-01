@@ -14,10 +14,12 @@
 
     var elems = [document.getElementById('el'), document.getElementById('input')];
 
+    // 数据依赖
     var data = {
         value: 'hello!'
     };
 
+    // 模板方法函数
     var command = {
         text: function(str) {
             this.innerHTML = str;
@@ -27,6 +29,7 @@
         }
     };
 
+    // DOM扫描
     var scan = function() {
         /**
          * 扫描带指令的节点属性
@@ -98,7 +101,7 @@
         data.value = 'fuck';
     }, 2000);
     </script>
-    
+
 </body>
 
 </html>
