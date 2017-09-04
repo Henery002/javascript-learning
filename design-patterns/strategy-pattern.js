@@ -2,6 +2,13 @@
  * 策略模式 -- 表单提交验证
  */
 
+/* -----------------------------------------------------------------------------
+  shift:从集合中把第一个元素删除，并返回这个元素的值。
+  unshift: 在集合开头添加一个或更多元素，并返回新的长度
+  push:在集合中添加元素，并返回新的长度
+  pop:从集合中把最后一个元素删除，并返回这个元素的值。
+----------------------------------------------------------------------------- */
+
 /**
  * 策略对象 strategies
  * isNonEmpty 验证是否为空
@@ -42,6 +49,8 @@ Validator.prototype.add = function(dom, rules) {
             (function(i){
                 var strategyAry = rule[i].strategy.split(':') //例如['minLength',6]
                 var errorMsg = rule[i].errorMsg //'用户名不能为空'
+
+                // 把所有方法缓存起来统一调用
                 that.cache.push(function(){
                     var strategy = strategyAry.shift() //用户挑选的strategy
                     strategyAry.unshift(dom.value) //把input的value添加进参数列表
@@ -61,7 +70,7 @@ Validator.prototype.start = function(){
         if (errorMsg) {//r如果有确切返回值，说明校验没有通过
             return errorMsg;
         }
-        
+
     }
 };
 
@@ -85,7 +94,7 @@ var validatorFunc = function () {
         strategy: 'isNonEmpty',
         errorMsg: '密码不能为空！'
     }, {
-        strategy: 'minLength:',
+        strategy: 'minLength:6',
         errorMsg: '密码长度不能小于6位！'
     }]);
 
@@ -108,6 +117,7 @@ var validatorFunc = function () {
     return errorMsg;
 };
 
+// 检查触发代码
 registerForm.addEventListener('submit', function() {
     let errorMsg = validatorFunc();
     if (errorMsg) {
@@ -115,4 +125,3 @@ registerForm.addEventListener('submit', function() {
         return false;
     }
 }, false);
-
