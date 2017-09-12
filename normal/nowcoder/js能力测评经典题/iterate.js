@@ -5,4 +5,16 @@
 ----------------------------------------------------------------------------- */
 function iterate(obj) {
 
+  var array = [];
+
+  for (var attr in obj) {
+    if (obj.hasOwnProperty(attr)) {
+        array.push(attr + ": " + obj[attr]);
+    }
+  }
+  return array;
 }
+
+var C = function() {this.foo = 'bar'; this.baz = 'bim';};
+C.prototype.bop = 'bip';
+console.log( iterate( new C() ) );
