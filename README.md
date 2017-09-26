@@ -10,4 +10,6 @@
 #### 5._front-end-rules_  
 >前端编码规范  
 #### 6._normal_  
->日常代码练习  
+>日常代码练习和知识点理解  
+#### 7._functional-programming_  
+>js函数式编程学习  

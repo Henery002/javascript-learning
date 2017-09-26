@@ -1,0 +1,17 @@
+{
+  "name": "immutable-demo",
+  "version": "1.0.0",
+  "description": "learning to use immmutable.js in React",
+  "main": "demo1.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "keywords": [
+    "immutable"
+  ],
+  "author": "nojsja",
+  "license": "ISC",
+  "devDependencies": {
+    "immutable": "^3.8.1"
+  }
+}
