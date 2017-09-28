@@ -1,0 +1,23 @@
+/*  边框
+============================================================================= */
+.matrix-border {
+  height: 800px;
+  width: 800px;
+  margin: auto;
+
+  font-size: 0;
+}
+
+/*  格子
+============================================================================= */
+.matrix {
+  display: inline-block;
+
+  width: 2%;
+  height: 2%;
+
+  color: #14bf49;
+  font-size: 16px;
+  text-align: center;
+
+}
