@@ -1,6 +1,8 @@
 ### sass开发规范
 ---------------------------------
 
+>author: NoJsJa
+
 #### Contents
 ---------------------------------
 
@@ -26,7 +28,7 @@
 
 Sass允许使用变量，所有变量以$开头：  
 
-```
+```scss
 $blue: #1875e7;
 　div {
 　　　color: $blue;
@@ -35,7 +37,7 @@ $blue: #1875e7;
 
 内嵌到字符串中的变量需要写在 ' #{} ' 中间：  
 
-```
+```scss
 $side: left;
 .rounded {
 　border-#{$side}-radius: 5px;
@@ -46,7 +48,7 @@ $side: left;
 
 Sass允许在代码中使用算式：  
 
-```
+```scss
 body {
 　margin: (14px/2);
 　top: 50px + 100px;
@@ -58,7 +60,7 @@ body {
 
 Sass允许一个选择器使用关键字 @extend 继承另一个选择器：  
 
-```
+```scss
 .class1 {
 　　border: 1px solid #ddd;
 }
@@ -73,7 +75,7 @@ Sass允许一个选择器使用关键字 @extend 继承另一个选择器：
 
 Mixin是可以重用的代码块，使用 @mixin 关键字定义一个代码块：  
 
-```
+```scss
 @mixin left {
 　float: left;
 　margin-left: 10px;
@@ -83,7 +85,7 @@ Mixin是可以重用的代码块，使用 @mixin 关键字定义一个代码块�
 
 使用 @include 调用这个mixin：  
 
-```
+```scss
 div {
 　 @include left;
 }
@@ -91,7 +93,7 @@ div {
 
 mixin还能制定参数和参数默认值：  
 
-```
+```scss
 @mixin left($value: 10px) {
 　 float: left;
 　 margin-right: $value;
@@ -100,7 +102,7 @@ mixin还能制定参数和参数默认值：
 
 使用的时候可以直接使用默认值或是加入参数值：  
 
-```
+```scss
 div {
 　　　　@include left(20px);
 　　}
@@ -110,7 +112,7 @@ div {
 
 Sass允许用户使用 @function 关键字编写自己的函数，函数可以直接使用：  
 
-```
+```scss
 @function double($n) {
 　 @return $n * 2;
 }
@@ -128,12 +130,12 @@ Sass允许用户使用 @function 关键字编写自己的函数，函数可以�
 
 引入外部文件：  
 
-```
+```scss
 @import "../foo.css";
 ```
 
 使用条件语句：  
-```
+```scss
 p {
 　@if 1 + 1 == 2 { border: 1px solid; }
 　@if 5 < 3 { border: 2px dotted; }
@@ -148,7 +150,7 @@ p {
 
 使用循环语句，支持for和while循环：　
 
-```
+```scss
 @for $i from 1 to 10 {
 　　.border-#{$i} {
 　　　　border: #{$i}px solid blue;
@@ -173,7 +175,7 @@ $i: 6;
 
 统一采用驼峰命名法(camelCase)，第一个首字母小写，其它单词的首字母大写：  
 
-```
+```scss
 /* bad */
 #rootlistitem {...}
 #RootListItem {...}
@@ -184,7 +186,7 @@ $i: 6;
 
 命名单词数最好不要超过3个：  
 
-```
+```scss
 /* bad */
 #rootListItemWrapper {...}
 
@@ -206,7 +208,7 @@ $i: 6;
 
 类名最好使用三个及三个以下的单词，至多不超过四个：  
 
-```
+```scss
 /* bad */
 .file-detail-list-item-wrapper {...}
 
@@ -223,7 +225,7 @@ $i: 6;
 
 父元素和多级子元素的命名需要体现元素在页面的功能、样式、或结构：  
 
-```
+```scss
 .file-list-wrapper {
 
   .file-list-header {...}
@@ -248,7 +250,7 @@ $i: 6;
 
 内部属性书写顺序应该按照从上到下是 布局定位、盒模型属性、表现性属性和其它：  
 
-```
+```scss
 .class {
   /* 布局定位 */
   position: absolute;
@@ -292,7 +294,7 @@ $i: 6;
 
 代码缩进统一使用两个空格，不要用四个空格和tab(编辑器内可以自定义tab输出的空格数，不用手打两个空格)   
 
-```
+```scss
 /* bad */
 .class {
     position: fixed;
@@ -306,7 +308,7 @@ $i: 6;
 
 选择器与花括号之间要保留一个空格，属性名之后的冒号与属性值之间要保留一个空格，选择符号两边各保留一个空格    
 
-```
+```scss
 /* bad */
 .class>div{
   position:fixed;
@@ -322,19 +324,19 @@ $i: 6;
 
 在Sass中你可以嵌套选择器，这可以使代码变得更模块化和可读，嵌套所有的选择器，但尽量避免嵌套没有任何内容的选择器(优先使用子选择器' > '，提高css查询性能)  
 
-```
+```scss
 /* bad */
 .content {
   display: block;
 }
- 
+
 .content > .news-article > .title {
   font-size: 1.2em;
 
 /* bad */
 .content {
   display: block;
- 
+
   > .news-article {
     > .title {
       font-size: 1.2em;
@@ -344,7 +346,7 @@ $i: 6;
 /* good */
 content {
   display: block;
- 
+
   > .news-article > .title {
     font-size: 1.2em;
   }
@@ -353,46 +355,46 @@ content {
 
 在Sass中，当你嵌套你的选择器时也可以使用上下文媒体查询，你可以在任何给定的嵌套层次中使用媒体查询  
 
-```
+```scss
 /* bad */
 .content-page {
   font-size: 1.2rem;
- 
+
   > .main {
     background-color: whitesmoke;
- 
+
     > .latest-news {
       padding: 1rem;
- 
+
       > .news-article {
         padding: 1rem;
- 
+
         > .title {
           font-size: 2rem;
         }
       }
     }
- 
+
     > .content {
       margin-top: 2rem;
       padding: 1rem;
     }
   }
- 
+
   > .page-footer {
     margin-top: 2rem;
     font-size: 1rem;
   }
 }
- 
+
 @media screen and (min-width: 641px) {
   .content-page {
     font-size: 1rem;
- 
+
     > .main > .latest-news > .news-article > .title {
       font-size: 3rem;
     }
- 
+
     > .page-footer {
       font-size: 0.8rem;
     }
@@ -404,40 +406,40 @@ content {
 /* good */
 .content-page {
   font-size: 1.2rem;
- 
+
   @media screen and (min-width: 641px) {
     font-size: 1rem;
   }
- 
+
   > .main {
     background-color: whitesmoke;
- 
+
     > .latest-news {
       padding: 1rem;
- 
+
       > .news-article {
         padding: 1rem;
- 
+
         > .title {
           font-size: 2rem;
- 
+
           @media screen and (min-width: 641px) {
             font-size: 3rem;
           }
         }
       }
     }
- 
+
     > .content {
       margin-top: 2rem;
       padding: 1rem;
     }
   }
- 
+
   > .page-footer {
     margin-top: 2rem;
     font-size: 1rem;
- 
+
     @media screen and (min-width: 641px) {
       font-size: 0.8rem;
     }
@@ -453,47 +455,47 @@ content {
 4. 用Sass的上下文媒体查询  
 5. 子选择器作为最后的部分  
 
-```
+```scss
 .product-teaser {
   /* 当前选择器的样式属性 */
   display: inline-block;
   padding: 1rem;
   background-color: whitesmoke;
   color: grey;
- 
+
   /* 当前选择器的伪类选择器 */
   &:hover {
     color: black;
   }
- 
+
   &:before {
     content: "";
     display: block;
     border-top: 1px solid grey;
   }
- 
+
   &:after {
     content: "";
     display: block;
     border-top: 1px solid grey;
   }
- 
+
   /* 当前选择器的声明样式 */
   &.active {
     background-color: pink;
     color: red;
   }
- 
+
   /* 上下文媒体查询 */
   @media screen and (max-width: 640px) {
     display: block;
     font-size: 2em;
   }
- 
+
   /* 子选择器 */
   > .content > .title {
     font-size: 1.2em;
- 
+
     /* 子选择器上下文媒体查询 */
     @media screen and (max-width: 640px) {
       letter-spacing: 0.2em;
@@ -516,7 +518,7 @@ content {
 
 一个大组件需要使用组件注释，体现页面结构。  
 
-```
+```scss
   /* ==========================================================
   父组件 file-list
   ============================================================= */
@@ -528,7 +530,7 @@ content {
 
 一个组件的子组件需要使用子组件注释，体现组件整体结构。  
 
-```
+```scss
   /* 子组件 file-list-item
   ============================================================= */
   .file-list-item {...}
@@ -539,7 +541,7 @@ content {
 
 使用块注释和行注释都行，重要的是体现代码结构和代码简洁度  
 
-```
+```scss
 /* 块注释 */
 .class1 {
 
