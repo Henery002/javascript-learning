@@ -15,58 +15,43 @@
   和 onrejected，它们都是 Function 类型。当Promise状态为fulfilled时，调用 then 的
   onfulfilled 方法，当Promise状态为rejected时，调用 then 的 onrejected 方法，
   所以在异步操作的完成和绑定处理方法之间不存在竞争）。
+
+  Promise.all(iterable)
+    这个方法返回一个新的promise对象，该promise对象在iterable参数对象里所有的promise对象
+    都成功的时候才会触发成功，一旦有任何一个iterable里面的promise对象失败则立即触发该promise
+    对象的失败。这个新的promise对象在触发成功状态以后，会把一个包含iterable里所有promise返回值
+    的数组作为成功回调的返回值，顺序跟iterable的顺序保持一致；如果这个新的promise对象触发了失败
+    状态，它会把iterable里第一个触发失败的promise对象的错误信息作为它的失败错误信息。
+    Promise.all方法常被用于处理多个promise对象的状态集合。
+
+  Promise.race(iterable)
+    当iterable参数里的任意一个子promise被成功或失败后，父promise马上也会用子promise的成功返回
+    值或失败详情作为参数调用父promise绑定的相应句柄，并返回该promise对象。
+  Promise.reject(reason)
+    返回一个状态为失败的Promise对象，并将给定的失败信息传递给对应的处理方法
+  Promise.resolve(value)
+    返回一个状态由给定value决定的Promise对象。如果该值是一个Promise对象，则直接返回该对象；
+    如果该值是thenable(即，带有then方法的对象)，返回的Promise对象的最终状态由then方法执行决定；
+    否则的话(该value为空，基本类型或者不带then方法的对象),返回的Promise对象状态为fulfilled，
+    并且将该value传递给对应的then方法。通常而言，如果你不知道一个值是否是Promise对象，
+    使用Promise.resolve(value) 来返回一个Promise对象,这样就能将该value以Promise对象形式使用。
 ----------------------------------------------------------------------------- */
 
-/**
- * 状态传递 - promise之间可以逐级传递状态
- * 调用句柄 - 每个想关联的promise之间存在 上级可以调用下一级的关系
- * 单一状态 - 每个promise对象的状态改变都是单向固定的
- */
-
 /* ************************* Promise构造函数 ************************* */
-function Promise(callback, name) {
-  var self = this;
+function Promise(callback) {
+  var that = this;
   this.name = name;
-  var thisValue = 'pending';  // 临时变量
   this.status = 'pending';
-  this.nextHandle = null;
-  this.process = callback ? callback: null;  // 正在处理的方法
   this.handle = {
     success: null,  // 成功的处理函数
-    error: null  // 失败的处理函数
+    error: null,  //
   };
 
-  Object.defineProperty(this, 'status', {  // 自定义对象属性
-    enumerable: true,
-    configurable: true,
-    get: function () {
-      return thisValue;
-    },
-    set: function (status) {
-        if (thisValue !== 'pending') return;
-
-        thisValue = status;
-        if (this.handle[status]) {
-          this.handle[status]();
-          this.nextHandle.setStatus(status);
-        }
-    }
-  });
-
-  // 在下一个事件循环执行
   setTimeout(function () {
-    // 开始执行
-    this.process && this.process(
-      function (info) {
-        this.status = 'success';
-      }.bind(this),
-
-      function (info) {
-        this.status = 'error';
-      }.bind(this)
-    );
-
-  }.bind(this), 0)
+    var resolve = function (msg) {
+      that
+    };
+  }, 0);
 
 }
 
@@ -90,10 +75,6 @@ Promise.reject = function () {
 
 /* ------------------- 对象继承的方法 ------------------- */
 
-// 设置状态
-Promise.prototype.setStatus = function (status) {
-  this.status = status;
-};
 
 /**
  * [then 应该返回一个全新的Promise对象，不应该与当前Promise存在功能耦合]
@@ -122,33 +103,32 @@ Promise.prototype.catch = function (error) {
 /* ************************* 测试main ************************* */
 var promise1 = new Promise(function (resolve, reject) {
   setTimeout(function () {
-    console.log('promise1');
+    console.log('promise1 pending => fulfilled');
+    resolve('promise1 resolve')
   }, 2000);
 }, 'promise1');
 
 
 var promise2 = promise1.then(function (success) {
-  setTimeout(() => {
-    console.log('test new promise');
-  }, 1000);
+  console.log('promise2: ', success);
 
-}, function () {
-
+}, function (error) {
+  console.log('promise2: ', error);
 }, 'promise2');
 
-
-var promise3 = promise2.then(function (test) {
-
-  console.log('p3');
-}, function (error) {
-
-  console.log('error');
-
-}, 'promise3');
-
-var promise4 = promise3.then(function (info) {
-console.log('p4');
-
-}, function () {
-
-}, 'promise4')
+//
+// var promise3 = promise2.then(function (test) {
+//
+//   console.log('p3');
+// }, function (error) {
+//
+//   console.log('error');
+//
+// }, 'promise3');
+//
+// var promise4 = promise3.then(function (info) {
+// console.log('p4');
+//
+// }, function () {
+//
+// }, 'promise4')
