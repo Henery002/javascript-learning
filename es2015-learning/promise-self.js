@@ -37,23 +37,128 @@
     使用Promise.resolve(value) 来返回一个Promise对象,这样就能将该value以Promise对象形式使用。
 ----------------------------------------------------------------------------- */
 
+
 /* ************************* Promise构造函数 ************************* */
-function Promise(callback) {
-  var that = this;
-  this.name = name;
-  this.status = 'pending';
-  this.handle = {
-    success: null,  // 成功的处理函数
-    error: null,  //
-  };
+function Promise(processor) {
+  var self = this;
+  self.status = 'pending';  // status
+  self.value = null;  // resolve value
+  self.reason = null;  // reject reason
+  self.onRejectedCallbacks = [];  // reject callback
+  self.onFulfilledCallbacks = [];  // resolve callback
 
-  setTimeout(function () {
-    var resolve = function (msg) {
-      that
-    };
-  }, 0);
+  // resolve
+  function resolve(value) {
+    if (self.status === 'pending') {
+      self.status = 'fulfilled';
+      self.value = value;
+      self.onFulfilledCallbacks.map(function (callback) {
+        callback();
+      });
+    }
+  }
 
+  // reject
+  function reject(reason) {
+    if (self.status === 'pending') {
+      self.status = 'rejected';
+      self.reason = reason;
+      self.onRejectedCallbacks.map(function (callback) {
+        callback();
+      });
+    }
+  }
+
+  // 开始执行
+  try {
+    processor(resolve, reject);
+  } catch (e) {
+    reject(e);
+  }
 }
+
+/* ------------------- 分析promise.then中返回的值类型 promise/value ------------------- */
+// 注意父子promise状态是怎样控制的，父promise需要将控制权转发给子promise
+var analysisPromise = function (x, reject, resolve) {
+
+  var then, y;
+
+  // 可能为promise
+  if (x !== undefined && (typeof x === 'object' || typeof x === 'function')) {
+    then = x.then;
+
+    // 为promise
+    if (then && typeof then === 'function') {
+
+      then.call(x, function (value) {
+
+      }, function (error) {
+
+      });
+
+    // 为普通值
+    }else {
+      resolve(x);
+    }
+
+  // 普通值
+  }else {
+    resolve(x);
+  }
+};
+
+/* ------------------- 对象继承的方法 ------------------- */
+
+
+/**
+ * [then 应该返回一个全新的Promise对象，不应该与当前Promise存在功能耦合]
+ * @param  {[type]} successFn [description]
+ * @param  {[type]} errorFn   [description]
+ */
+Promise.prototype.then = function (successCallback, errorCallback) {
+  var promise, x;
+  var self = this;
+
+  // 判断当前promise状态
+  if (this.status === 'fulfilled') {
+    promise = new Promise(function (reject, resolve) {
+      x = successCallback(this.value);
+      // 分析返回值 然后更改 当前promise状态
+      analysisPromise(x, reject, resolve);
+    });
+  }
+
+  if (this.status === 'rejected') {
+    promise = new Promise(function (reject, resolve) {
+      x = errorCallback(this.value);
+      // 分析返回值 然后更改 当前promise状态
+      analysisPromise(x, reject, resolve);
+    });
+  }
+
+  if (this.status === 'pending') {
+    promise = new Promise(function (reject, resolve) {
+      self.onFulfilledCallbacks.push(function () {
+        x = successCallback(this.value);
+        // 分析返回值 然后更改 当前promise状态
+        analysisPromise(x, reject, resolve);
+      });
+
+      self.onRejectedCallbacks.push(function () {
+        x = errorCallback(this.value);
+        // 分析返回值 然后更改 当前promise状态
+        analysisPromise(x, reject, resolve);
+      });
+    });
+
+  }
+
+  return promise;
+};
+
+Promise.prototype.catch = function (error) {
+
+};
 
 /* ------------------- 静态方法 ------------------- */
 
@@ -73,32 +178,6 @@ Promise.reject = function () {
 
 };
 
-/* ------------------- 对象继承的方法 ------------------- */
-
-
-/**
- * [then 应该返回一个全新的Promise对象，不应该与当前Promise存在功能耦合]
- * @param  {[type]} successFn [description]
- * @param  {[type]} errorFn   [description]
- */
-Promise.prototype.then = function (successFn, errorFn, name) {
-  this.handle['success'] = successFn;
-  this.handle['error'] = errorFn;
-
-  var newPromise = new Promise(function (resolve, reject) {
-
-  }, function () {
-
-  }, name);
-
-  this.nextHandle = newPromise;
-  return newPromise;
-};
-
-Promise.prototype.catch = function (error) {
-
-};
-
 
 /* ************************* 测试main ************************* */
 var promise1 = new Promise(function (resolve, reject) {
@@ -109,8 +188,11 @@ var promise1 = new Promise(function (resolve, reject) {
 }, 'promise1');
 
 
+// then可能返回thenable类型的值
 var promise2 = promise1.then(function (success) {
-  console.log('promise2: ', success);
+  return new Promise(function (resolve, reject) {
+
+  });
 
 }, function (error) {
   console.log('promise2: ', error);
