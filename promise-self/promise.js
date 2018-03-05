@@ -78,8 +78,9 @@ function Promise(processor) {
 }
 
 /* ------------------- 分析promise.then中返回的值类型 promise/value ------------------- */
-// 注意父子promise状态是怎样控制的，父promise需要将控制权转发给子promise
-var analysisPromise = function (x, reject, resolve) {
+
+// 注意父子promise状态是怎样控制的，父promise需要将控制权(resovle, reject)转发给子promise
+var analysisPromise = function (x, resolve, reject) {
 
   var then, y;
 
@@ -91,9 +92,10 @@ var analysisPromise = function (x, reject, resolve) {
     if (then && typeof then === 'function') {
 
       then.call(x, function (value) {
+        analysisPromise(value, resolve, reject);
 
       }, function (error) {
-
+        reject(error);
       });
 
     // 为普通值
@@ -107,7 +109,8 @@ var analysisPromise = function (x, reject, resolve) {
   }
 };
 
-/* ------------------- 对象继承的方法 ------------------- */
+
+/* ------------------- then-返回新的promise ------------------- */
 
 
 /**
@@ -120,34 +123,34 @@ Promise.prototype.then = function (successCallback, errorCallback) {
   var self = this;
 
   // 判断当前promise状态
-  if (this.status === 'fulfilled') {
+  if (self.status === 'fulfilled') {
     promise = new Promise(function (reject, resolve) {
-      x = successCallback(this.value);
+      x = successCallback(self.value);
       // 分析返回值 然后更改 当前promise状态
-      analysisPromise(x, reject, resolve);
+      analysisPromise(x, resolve, reject);
     });
   }
 
-  if (this.status === 'rejected') {
+  if (self.status === 'rejected') {
     promise = new Promise(function (reject, resolve) {
-      x = errorCallback(this.value);
+      x = errorCallback(self.value);
       // 分析返回值 然后更改 当前promise状态
-      analysisPromise(x, reject, resolve);
+      analysisPromise(x, resolve, reject);
     });
   }
 
-  if (this.status === 'pending') {
+  if (self.status === 'pending') {
     promise = new Promise(function (reject, resolve) {
       self.onFulfilledCallbacks.push(function () {
-        x = successCallback(this.value);
+        x = successCallback(self.value);
         // 分析返回值 然后更改 当前promise状态
-        analysisPromise(x, reject, resolve);
+        analysisPromise(x, resolve, reject);
       });
 
       self.onRejectedCallbacks.push(function () {
-        x = errorCallback(this.value);
+          x = errorCallback ? errorCallback(self.reason) : undefined;
         // 分析返回值 然后更改 当前promise状态
-        analysisPromise(x, reject, resolve);
+        analysisPromise(x, resolve, reject);
       });
     });
 
@@ -156,61 +159,201 @@ Promise.prototype.then = function (successCallback, errorCallback) {
   return promise;
 };
 
+/* ------------------- 错误捕获 ------------------- */
 Promise.prototype.catch = function (error) {
 
 };
 
-/* ------------------- 静态方法 ------------------- */
+/* ------------------- all-所有promise成功后即成功,一个失败即失败 ------------------- */
 
-Promise.all = function () {
+Promise.all = function (pArray) {
+  var rArray = [];
+  var promise = new Promise(function (resolve, reject) {
 
-};
+    pArray.forEach(function (pr, i) {
 
-Promise.race = function () {
+        if (pr instanceof Promise) {
+          pr.then(function (value1) {
+            analysisPromise(value1, function (value2) {
+              rArray[i] = value2;
+              if (rArray.length === pArray.length) {
+                resolve(rArray);
+              }
+            }, reject);
 
-};
+          }, function (error) {
+            reject(error);
+          });
 
-Promise.resolve = function () {
+        }else {
+          rArray[i] = pr;
+          if (rArray.length === pArray.length) {
+            resolve(rArray);
+          }
+        }
 
-};
-
-Promise.reject = function () {
-
-};
-
-
-/* ************************* 测试main ************************* */
-var promise1 = new Promise(function (resolve, reject) {
-  setTimeout(function () {
-    console.log('promise1 pending => fulfilled');
-    resolve('promise1 resolve')
-  }, 2000);
-}, 'promise1');
-
-
-// then可能返回thenable类型的值
-var promise2 = promise1.then(function (success) {
-  return new Promise(function (resolve, reject) {
+    });
 
   });
 
-}, function (error) {
-  console.log('promise2: ', error);
-}, 'promise2');
+  return promise;
+};
 
-//
-// var promise3 = promise2.then(function (test) {
-//
-//   console.log('p3');
-// }, function (error) {
-//
-//   console.log('error');
-//
-// }, 'promise3');
-//
-// var promise4 = promise3.then(function (info) {
-// console.log('p4');
-//
-// }, function () {
-//
-// }, 'promise4')
+/* ------------------- race - 最终状态取决于第一个完成的promise状态 ------------------- */
+Promise.race = function (pArray) {
+  var rArray = [];
+  var promise = new Promise(function (resolve, reject) {
+
+    pArray.forEach(function (pr, i) {
+
+        if (pr instanceof Promise) {
+          pr.then(function (value) {
+            analysisPromise(value, resolve, reject);
+          }, function (error) {
+            reject(error);
+          });
+
+        }else {
+          rArray[i] = pr;
+        }
+
+    });
+
+  });
+
+  return promise;
+};
+
+/* ------------------- 返回成功态的promise ------------------- */
+Promise.resolve = function (value) {
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
+      resolve(value);
+    })
+  });
+};
+
+/* ------------------- 返回失败态的promise ------------------- */
+Promise.reject = function (reason) {
+  return new Promise(function (resolve, reject) {
+    setTimeout(function () {
+      reject(reason);
+    })
+  });
+};
+
+
+
+
+
+
+
+
+
+
+
+
+/* ************************* 测试main ************************* */
+
+var promise1 = new Promise(function (resolve, reject) {
+  setTimeout(function () {
+    console.log('promise1 -> pending');
+    resolve('promise1 -> resolved');
+    // reject('promise1 -> rejected');
+  }, 1000);
+});
+
+promise1.then(function (value) {
+  console.log(value);
+}, function (reason) {
+  console.log(reason);
+});
+
+promise1.then(function (value) {
+
+  var promise = new Promise(function (resolve, reject) {
+    console.log('promise1 then new promise');
+    setTimeout(function () {
+      resolve('promise1 then new promise resolve');
+    }, 1000)
+  });
+
+  promise.then(function (value) {
+    console.log(value);
+  })
+
+  return promise;
+
+}).then(function (value) {
+  return new Promise(function (resolve, reject) {
+
+  });
+});
+
+
+
+Promise.all([
+
+  new Promise(function (resolve, reject) {
+    setTimeout(function () {
+      resolve(true);
+    }, 1000);
+  }),
+
+  new Promise(function (resolve, reject) {
+    setTimeout(function () {
+      resolve(true);
+    }, 2000);
+  }),
+
+  new Promise(function (resolve, reject) {
+    setTimeout(function () {
+      resolve(true);
+    }, 2000);
+  }),
+
+]).then(function (value) {
+  console.log('all - value: ', value);
+}, function (reason) {
+  console.log('all - reason: ', reason);
+});
+
+
+Promise.race(
+  [
+    new Promise(function (resolve, reject) {
+      setTimeout(function () {
+        resolve('p1');
+      }, 3000);
+    }),
+
+    new Promise(function (resolve, reject) {
+      setTimeout(function () {
+        resolve('p2');
+      }, 3000);
+    }),
+
+    new Promise(function (resolve, reject) {
+      setTimeout(function () {
+        resolve('p3');
+      }, 3000);
+    }),
+  ]
+).then(function (value) {
+  console.log('race - value : ', value);
+}, function (reason) {
+  console.log('race - reason : ', reason);
+})
+
+
+Promise.resolve('resolve').then(function (value) {
+  console.log('Promise resolve: ', value);
+}, function (reason) {z
+  console.log('Promise reject: ', reason);
+});
+
+Promise.reject('reject').then(function (value) {
+  console.log('Promise resolve: ', value);
+}, function (reason) {
+  console.log('Promise reject: ', reason);
+})

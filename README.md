@@ -37,3 +37,23 @@
 #### 7._functional-programming_
 
 >js函数式编程学习  
+
+#### 8._cluster_
+
+>闭包相关  
+
+#### 9._markdown_
+
+>自己总结的文档  
+
+#### 10._promise-self_
+
+>使用javascript5实现javascript6的Promise  
+
+#### 11._js-animation_
+
+>js动画相关  
+
+#### 12._data-structure_
+
+>数据结构相关  
