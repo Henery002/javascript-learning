@@ -64,16 +64,18 @@ function Promise(processor) {
       self.status = 'rejected';
       self.reason = reason;
       self.onRejectedCallbacks.map(function (callback) {
-        callback();
+        callback(reason);
       });
     }
   }
 
-  // 开始执行
+  // 延迟到下一次事件循环
   try {
     processor(resolve, reject);
   } catch (e) {
-    reject(e);
+    setTimeout(function () {
+      reject(e);
+    });
   }
 }
 
@@ -119,6 +121,7 @@ var analysisPromise = function (x, resolve, reject) {
  * @param  {[type]} errorFn   [description]
  */
 Promise.prototype.then = function (successCallback, errorCallback) {
+
   var promise, x;
   var self = this;
 
@@ -133,7 +136,7 @@ Promise.prototype.then = function (successCallback, errorCallback) {
 
   if (self.status === 'rejected') {
     promise = new Promise(function (reject, resolve) {
-      x = errorCallback(self.value);
+      x = errorCallback(self.reason);
       // 分析返回值 然后更改 当前promise状态
       analysisPromise(x, resolve, reject);
     });
@@ -159,10 +162,16 @@ Promise.prototype.then = function (successCallback, errorCallback) {
   return promise;
 };
 
-/* ------------------- 错误捕获 ------------------- */
-Promise.prototype.catch = function (error) {
 
+/* ------------------- 错误捕获 ------------------- */
+Promise.prototype.catch = function (handleError) {
+  if (this.status === 'pending') {
+    this.onRejectedCallbacks.push(handleError);
+  }else {
+    this.reason && handleError(this.reason);
+  }
 };
+
 
 /* ------------------- all-所有promise成功后即成功,一个失败即失败 ------------------- */
 
@@ -212,7 +221,6 @@ Promise.race = function (pArray) {
           }, function (error) {
             reject(error);
           });
-
         }else {
           rArray[i] = pr;
         }
@@ -241,6 +249,9 @@ Promise.reject = function (reason) {
     })
   });
 };
+
+
+
 
 
 
@@ -291,6 +302,23 @@ promise1.then(function (value) {
 });
 
 
+var promise2 = new Promise(function (resolve, reject) {
+  // throw new Error('promise2 error test.');
+  resolve(true);
+});
+
+promise2.then(function (value) {
+  throw new Error('test');
+}, function (reason) {
+  console.log('promise2 then error: ', reason);
+}).catch(function (error) {
+  console.log('promise2 then throw error: ', error);
+});
+
+promise2.catch(function (error) {
+  console.log('promise2 catch error: ', error);
+});
+
 
 Promise.all([
 
@@ -302,7 +330,7 @@ Promise.all([
 
   new Promise(function (resolve, reject) {
     setTimeout(function () {
-      resolve(true);
+      reject(false);
     }, 2000);
   }),
 
@@ -348,7 +376,7 @@ Promise.race(
 
 Promise.resolve('resolve').then(function (value) {
   console.log('Promise resolve: ', value);
-}, function (reason) {z
+}, function (reason) {
   console.log('Promise reject: ', reason);
 });
 
