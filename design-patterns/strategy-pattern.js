@@ -66,8 +66,8 @@ Validator.prototype.start = function(){
     var that = this;
     for (var i = 0; i < this.cache.length; i++) {
         var validatorFunc = that.cache[i];
-        var errorMsg = validatorFunc()//开始校验，并取得校验后的返回信息
-        if (errorMsg) {//如果有确切返回值，说明校验没有通过
+        var errorMsg = validatorFunc()  //开始校验，并取得校验后的返回信息
+        if (errorMsg) {  //如果有确切返回值，说明校验没有通过
             return errorMsg;
         }
 

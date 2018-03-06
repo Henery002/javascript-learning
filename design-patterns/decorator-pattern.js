@@ -105,17 +105,3 @@
   });
   var button = document.getElementById('buttonId');
 })();
-
-/* ************************* 侵入型改进 ************************* */
-(function () {
-  var before = function (fn, beforeFn) {
-    return function () {
-      beforeFn.apply(this, arguments);
-      fn.apply(this, arguments);
-    }
-  };
-
-  var after = function () {
-
-  };
-})();

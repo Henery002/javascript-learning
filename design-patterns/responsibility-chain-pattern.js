@@ -65,9 +65,6 @@
     if (!this.processor) return;
 
     var args = [this.next.bind(this)];
-    for (var i = 0; i < arguments.length; i++) {
-      args.push(arguments[i]);
-    }
 
     this.processor.apply(this, args);
   };
