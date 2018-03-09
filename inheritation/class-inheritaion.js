@@ -41,6 +41,7 @@ subObject.prototype.getSubValue = function() {
 };
 
 var newSubObject = new subObject("sub");
+var newSubObject2 = new subObject2("sub");
 
 console.log( "super: " + newSubObject.getSuperValue() );
 console.log(newSubObject.superAttr);

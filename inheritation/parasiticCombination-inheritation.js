@@ -26,6 +26,7 @@ function inheritPrototype (subObject, superObject){
   // 一般原型里面的constructor都是构造函数
   o.constructor = subObject;
   // 这样子子类的原型更改不会影响到父类原型的更改
+  // 
   // 原型对象的实例只提供了访问原型属性的接口，并不能直接修改原型
   subObject.prototype = o;
 }
