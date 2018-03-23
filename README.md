@@ -1,3 +1,5 @@
+> The colleague Yang Wei creates these files of knowledge of front-end skills.
+
 ### __The road to JS-pro developer__
 
 #### 1. _data-binding_
